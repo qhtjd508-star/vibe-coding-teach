@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>바이브코딩 교원 연수</title>
+<style>
+@font-face { font-family: "Paperlogy"; font-weight: 400; font-display: swap; src: url("fonts/Paperlogy-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Paperlogy"; font-weight: 600 700; font-display: swap; src: url("fonts/Paperlogy-SemiBold.woff2") format("woff2"); }
+@font-face { font-family: "Paperlogy"; font-weight: 800; font-display: swap; src: url("fonts/Paperlogy-ExtraBold.woff2") format("woff2"); }
+/* Layout idea: a sketchnote on white paper. Black marker lines, Paperlogy type, numbered stops joined by hand-drawn arrows, yellow highlighter for emphasis. */
+:root {
+  color-scheme: light;
+  --paper: #ffffff;
+  --ink: #1f1f1f;
+  --ink-soft: #555555;
+  --marker: #ffe45c;
+  --tint: #f6f5f0;
+  --wrong: #c0392b;
+  --hand: "Paperlogy", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+  --title: "Paperlogy", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --plain: "Paperlogy", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+  --wobble: 255px 18px 225px 18px / 18px 225px 18px 255px;
+  --wobble2: 18px 225px 18px 255px / 255px 18px 225px 18px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--hand); font-size: 17px; line-height: 1.6; letter-spacing: -0.2px;
+  word-break: keep-all; overflow-wrap: anywhere;
+}
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+a { color: var(--ink); }
+[hidden] { display: none !important; }
+svg.ico, svg.arrow { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+svg.ico { width: 34px; height: 34px; }
+svg.ico.big { width: 52px; height: 52px; }
+svg.arrow { width: 40px; height: 18px; align-self: center; }
+.hl { background: linear-gradient(transparent 55%, var(--marker) 55%); padding: 0 4px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: var(--hand); font-weight: 600; font-size: 17px; line-height: 1.2;
+  text-decoration: none; cursor: pointer; color: var(--paper); background: var(--ink);
+  padding: 10px 22px; border: 2.5px solid var(--ink); border-radius: var(--wobble);
+  box-shadow: 3px 3px 0 var(--marker); transition: transform .1s ease;
+}
+.btn:active { transform: translate(2px, 2px); }
+.btn.line { background: var(--paper); color: var(--ink); }
+.btn.small { font-size: 14px; padding: 7px 14px; }
+.btn.done { background: var(--marker); color: var(--ink); }
+.btn:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid var(--marker); outline-offset: 3px; }
+
+/* Login */
+.gate { position: fixed; inset: 0; z-index: 10; background: var(--paper); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.gate form {
+  width: 100%; max-width: 400px; text-align: center; display: flex; flex-direction: column; gap: 16px;
+  padding: 36px 28px; border: 2.5px solid var(--ink); border-radius: var(--wobble);
+}
+.gate h1 { font-family: var(--title); font-weight: 800; font-size: 38px; line-height: 1.2; }
+.field {
+  font-family: var(--hand); font-size: 17px; width: 100%; height: 48px; padding: 0 18px; text-align: center;
+  color: var(--ink); background: var(--paper); border: 2.5px solid var(--ink); border-radius: var(--wobble2);
+}
+.error { color: var(--wrong); font-size: 14px; min-height: 22px; }
+
+/* Nav */
+.nav {
+  flex: none; background: var(--paper); border-bottom: 2.5px solid var(--ink);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 10px max(16px, calc((100% - 1040px) / 2)); font-size: 15px;
+}
+.nav .home { text-decoration: none; }
+.hero .wrap { position: relative; }
+.memo {
+  position: absolute; left: 0; top: -8px; width: 200px; padding: 18px 16px 16px; text-align: left; text-decoration: none;
+  display: flex; flex-direction: column; gap: 4px; background: var(--marker); border: 2.5px solid var(--ink);
+  border-radius: 4px 14px 6px 18px / 14px 6px 18px 4px; box-shadow: 4px 4px 0 var(--ink); transform: rotate(-3deg); transition: transform .12s ease;
+}
+.memo::before { content: ""; position: absolute; top: -12px; left: 50%; width: 64px; height: 20px; margin-left: -32px; background: rgba(31,31,31,.18); transform: rotate(2deg); }
+.memo:hover { transform: rotate(-1deg) translateY(-2px); }
+.memo b { font-size: 20px; line-height: 1.25; font-weight: 800; }
+.memo span { font-size: 14px; line-height: 1.45; }
+.memo u { font-size: 14px; font-weight: 600; text-underline-offset: 4px; margin-top: 4px; }
+.to-top { position: fixed; right: 20px; bottom: 20px; z-index: 6; width: 52px; height: 52px; padding: 0; font-size: 24px; border-radius: 50% 45% 52% 48% / 48% 52% 45% 50%; }
+.nav strong { font-family: var(--title); font-weight: 800; font-size: 17px; white-space: nowrap; }
+#app { height: 100%; display: flex; flex-direction: column; }
+#scroller { flex: 1; min-height: 0; overflow-y: auto; }
+.nav { flex-wrap: wrap; }
+.nav div { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.nav a { text-decoration: none; white-space: nowrap; }
+.nav a:hover, .nav a[aria-current="page"] { background: linear-gradient(transparent 55%, var(--marker) 55%); }
+.nav a[aria-current="page"] { font-weight: 700; }
+
+/* Sections */
+section, header.hero { padding: 64px 20px; }
+section { border-top: 2.5px dashed var(--ink); }
+.wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+.hero { text-align: center; }
+.hero h1 { font-family: var(--title); font-weight: 800; font-size: 96px; line-height: 1.05; letter-spacing: -3px; }
+.hero .sub { font-size: 22px; font-weight: 600; }
+.hero .lead { max-width: 30em; margin: 0 auto; color: var(--ink-soft); }
+.flow { display: flex; align-items: stretch; justify-content: center; gap: 8px; }
+.flow a {
+  flex: 1; min-width: 0; max-width: 290px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 22px 12px; text-decoration: none; border: 2.5px solid var(--ink); border-radius: var(--wobble);
+}
+.flow a:nth-of-type(even) { border-radius: var(--wobble2); }
+.flow b { font-size: 19px; line-height: 1.3; }
+.flow small { font-size: 14px; color: var(--ink-soft); line-height: 1.45; }
+
+.head { display: flex; align-items: flex-start; gap: 16px; }
+.head > div { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.head h2 { font-family: var(--title); font-weight: 800; font-size: 36px; line-height: 1.25; letter-spacing: -1px; }
+.head p { max-width: 34em; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; counter-reset: s; }
+.steps li { counter-increment: s; display: flex; flex-direction: column; gap: 6px; }
+.steps li::before {
+  content: counter(s); font-weight: 700; font-size: 18px; line-height: 1;
+  width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+  border: 2.5px solid var(--ink); border-radius: 50% 45% 52% 48% / 48% 52% 45% 50%;
+}
+.steps h3 { font-size: 18px; line-height: 1.35; }
+.steps p { font-size: 15px; line-height: 1.55; color: var(--ink-soft); }
+
+.tip { display: flex; gap: 12px; align-items: flex-start; padding: 16px 20px; border: 2.5px solid var(--ink); border-radius: var(--wobble2); background: var(--paper); }
+.tip b { background: linear-gradient(transparent 55%, var(--marker) 55%); }
+
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.card { border: 2.5px solid var(--ink); border-radius: 14px 20px 12px 22px / 20px 12px 22px 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; background: var(--paper); }
+.card h3 { font-size: 21px; line-height: 1.3; }
+.card .sub { font-size: 14px; color: var(--ink-soft); }
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.card-top > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+pre.prompt {
+  margin: 0; flex: 1; white-space: pre-wrap; overflow-wrap: anywhere;
+  font-family: var(--plain); font-size: 14.5px; line-height: 1.65;
+  background: var(--tint); border-radius: 8px; padding: 14px;
+}
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+ul.checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: 16px; }
+ul.checks li { padding-left: 34px; position: relative; line-height: 1.5; }
+ul.checks li::before { content: "✓"; position: absolute; left: 0; top: 2px; width: 22px; height: 22px; border: 2.5px solid var(--ink); border-radius: 4px 6px 3px 5px; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+textarea.draft {
+  font-family: var(--plain); font-size: 14.5px; line-height: 1.65; color: var(--ink);
+  width: 100%; min-height: 230px; resize: vertical; padding: 14px;
+  border: 2px dashed var(--ink); border-radius: 8px; background: var(--tint);
+}
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.row .field { flex: 1; min-width: 160px; text-align: left; }
+.pdf { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.badge { font-size: 14px; font-weight: 600; padding: 4px 14px; border: 2.5px dashed var(--ink); border-radius: var(--wobble); white-space: nowrap; }
+.locked { background: repeating-linear-gradient(-45deg, var(--paper) 0 14px, var(--tint) 14px 28px); }
+
+.pager { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; padding-top: 8px; }
+.pager .next { margin-left: auto; }
+.mapbox { border: 2.5px solid var(--ink); border-radius: 14px 20px 12px 22px / 20px 12px 22px 14px; overflow-x: auto; background: var(--paper); }
+.mapbox img { display: block; width: 100%; min-width: 880px; height: auto; }
+.credit { font-size: 14px; color: var(--ink-soft); }
+.sub-h { font-size: 24px; line-height: 1.3; font-weight: 800; }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.trio a { display: flex; flex-direction: column; gap: 6px; padding: 20px; text-decoration: none; border: 2.5px solid var(--ink); border-radius: var(--wobble); }
+.trio a:nth-child(even) { border-radius: var(--wobble2); }
+.trio a:hover b { background: linear-gradient(transparent 55%, var(--marker) 55%); }
+.trio b { font-size: 20px; line-height: 1.3; align-self: flex-start; }
+.trio span { font-size: 15px; color: var(--ink-soft); line-height: 1.5; }
+.trio u { font-size: 15px; font-weight: 600; text-underline-offset: 4px; margin-top: 4px; }
+.demo { position: fixed; inset: 0; z-index: 8; background: rgba(255,255,255,.94); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.demo-win { width: 100%; max-width: 1040px; max-height: 100%; display: flex; flex-direction: column; background: var(--paper); border: 2.5px solid var(--ink); border-radius: 14px; box-shadow: 6px 6px 0 var(--marker); overflow: hidden; }
+.demo-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; border-bottom: 2.5px solid var(--ink); }
+.demo-bar .close { margin-left: auto; }
+.demo-note { padding: 10px 16px; border-bottom: 2.5px dashed var(--ink); font-size: 16px; }
+.demo-body { display: grid; grid-template-columns: 1fr 1fr; min-height: 0; overflow: auto; }
+.demo-pane { padding: 14px 16px 18px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.demo-pane + .demo-pane { border-left: 2.5px dashed var(--ink); }
+.demo-pane h3 { font-size: 15px; color: var(--ink-soft); font-weight: 600; }
+#demo-view { border: 1.5px solid #b9b9b9; border-radius: 6px; background: #fff; min-height: 320px; overflow: auto; }
+#demo-code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Malgun Gothic", monospace; font-size: 13px; line-height: 1.6; flex: none; }
+footer { border-top: 2.5px solid var(--ink); padding: 28px 20px; text-align: center; font-size: 14px; color: var(--ink-soft); }
+
+@media (max-width: 980px) {
+  .memo { position: relative; top: 0; align-self: center; margin-bottom: 4px; }
+}
+@media (max-width: 860px) {
+  .flow { flex-direction: column; align-items: center; }
+  .flow a { width: 100%; max-width: 340px; }
+  svg.arrow { transform: rotate(90deg); margin: 6px 0; }
+  .hero h1 { font-size: 68px; }
+  .cards, .two, .trio, .demo-body { grid-template-columns: 1fr; }
+  .demo-pane + .demo-pane { border-left: 0; border-top: 2.5px dashed var(--ink); }
+  .steps { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  section, header.hero { padding: 44px 16px; }
+  .hero h1 { font-size: 52px; letter-spacing: -2px; }
+  .hero .sub { font-size: 19px; }
+  .head h2 { font-size: 28px; }
+  .head > svg { display: none; }
+  .steps { grid-template-columns: 1fr; }
+  .nav { font-size: 14px; }
+  .nav { padding-top: 6px; padding-bottom: 6px; gap: 2px 16px; }
+  .nav div { gap: 14px; flex-wrap: nowrap; overflow-x: auto; max-width: 100%; padding-bottom: 2px; }
+}
+@media (prefers-reduced-motion: reduce) { .btn, .memo { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <form id="gate-form" autocomplete="off">
+    <h1>바이브코딩<br>교원 연수</h1>
+    <p>안내받은 비밀번호를 입력하세요.</p>
+    <input class="field" id="gate-pw" type="password" inputmode="numeric" aria-label="연수 비밀번호" placeholder="비밀번호">
+    <button class="btn" type="submit">들어가기</button>
+    <div class="error" id="gate-error" role="alert"></div>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <nav class="nav" aria-label="단계 이동">
+    <a class="home" href="#home"><strong>바이브코딩 연수</strong></a>
+    <div>
+      <a href="#map">1. 바이브코딩 지도</a>
+      <a href="#game">2. 간단한 게임</a>
+      <a href="#quiz">3. 학습 퀴즈 앱</a>
+      <a href="#api-key">4. API 키 발급</a>
+    </div>
+  </nav>
+  <main id="scroller">
+
+  <header class="hero view" id="home">
+    <div class="wrap">
+      <a class="memo" href="https://padlet.com/qhtjd508/1113_-s025cn8ywjnq8twc2zhu" target="_blank" rel="noopener"><b>결과물 올리기</b><span>완성한 웹앱을 Padlet에 올려 주세요.</span><u>Padlet 열기 ↗</u></a>
+      <h1>바이브코딩</h1>
+      <p class="sub">아이디어 → 프롬프트 → 웹앱</p>
+      <p class="lead">코드를 몰라도 괜찮아요. <span class="hl">만들고 싶은 것을 글로 설명</span>해서 수업에 쓸 웹앱을 직접 만들어 봅니다.</p>
+      <div class="flow">
+        <a href="#map"><svg class="ico big" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 11l12-5 14 5 12-5v31l-12 5-14-5-12 5z"/><path d="M17 6v31M31 11v31"/></svg><b>1. 바이브코딩 지도</b><small>아이디어가 서비스가 되는 전체 과정 보기</small></a>
+        <svg class="arrow" viewBox="0 0 64 28" aria-hidden="true"><path d="M3 20 C 18 5, 40 4, 58 15"/><path d="M48 8 L59 15 L47 21"/></svg>
+        <a href="#game"><svg class="ico big" viewBox="0 0 48 48" aria-hidden="true"><path d="M13 15h22c6 0 9 5 9 11s-2 9-6 9c-3 0-4-3-7-3H17c-3 0-4 3-7 3-4 0-6-3-6-9s3-11 9-11z"/><path d="M15 21v8M11 25h8M31 22h.5M36 27h.5"/></svg><b>2. 간단한 게임</b><small>Gemini 캔버스에 예시 프롬프트 붙여넣기</small></a>
+        <svg class="arrow" viewBox="0 0 64 28" aria-hidden="true"><path d="M3 20 C 18 5, 40 4, 58 15"/><path d="M48 8 L59 15 L47 21"/></svg>
+        <a href="#quiz"><svg class="ico big" viewBox="0 0 48 48" aria-hidden="true"><path d="M12 5h18l8 8v30H12z"/><path d="M30 5v8h8M18 21h14M18 28h14M18 35l3 3 6-7"/></svg><b>3. 학습 퀴즈 앱</b><small>영어 PDF에서 단어를 뽑아 퀴즈 앱 만들기</small></a>
+        <svg class="arrow" viewBox="0 0 64 28" aria-hidden="true"><path d="M3 20 C 18 5, 40 4, 58 15"/><path d="M48 8 L59 15 L47 21"/></svg>
+        <a href="#api-key"><svg class="ico big" viewBox="0 0 48 48" aria-hidden="true"><circle cx="15" cy="24" r="9"/><path d="M24 24h20M36 24v7M42 24v5M13 24h.5"/></svg><b>4. API 키 발급</b><small>Google AI Studio에서 내 키 만들기</small></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 바이브코딩 지도 -->
+  <section class="view" id="map">
+    <div class="wrap">
+      <div class="head">
+        <svg class="ico big" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 11l12-5 14 5 12-5v31l-12 5-14-5-12 5z"/><path d="M17 6v31M31 11v31"/></svg>
+        <div>
+          <h2><span class="hl">1. 바이브코딩 지도</span></h2>
+          <p>아이디어가 서비스가 되기까지의 전체 과정입니다. 말로 요청하면 AI가 코드를 쓰고, 저장하고, 인터넷에 올리는 흐름을 한 장으로 봅니다.</p>
+        </div>
+      </div>
+      <div class="mapbox"><img src="img/vibe-map.png" width="1280" height="720" alt="바이브코딩 지도. 1 환경 세팅: ChatGPT, Gemini, Claude 같은 LLM에 자연어로 요청하면 코드가 만들어진다. 2 GitHub로 버전 관리와 협업. 3-1 프론트엔드는 보여지는 곳, 3-2 백엔드는 보이지 않는 곳이며 Supabase로 관리. 4 배포는 Vercel로 자동화. 흐름은 아이디어, 코드, 배포, 서비스 순서."></div>
+      <div class="tip"><svg class="ico" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 7c-6 0-10 4-10 10 0 4 2 6 4 8v4h12v-4c2-2 4-4 4-8 0-6-4-10-10-10z"/><path d="M15 33h10M20 1v3M5 8l2 2M35 8l-2 2M2 19h3M35 19h3"/></svg><p><b>오늘은 이 중 첫걸음만 합니다.</b> AI에게 말로 요청해서 화면에 보이는 부분(프론트엔드)을 만드는 것까지 해 봅니다. 저장(GitHub), 데이터(Supabase), 배포(Vercel)는 지도에서 위치만 확인하세요.</p></div>
+      <h3 class="sub-h">프론트엔드의 세 가지 재료: HTML, CSS, 자바스크립트</h3>
+      <p>같은 내용의 웹페이지를 세 가지 방법으로 만들었습니다. 하나씩 눌러서 무엇이 달라지는지 비교해 보세요.</p>
+      <div class="trio">
+        <a href="#" data-demo="0"><b>① HTML만</b><span>뼈대. 제목, 글, 목록, 버튼 같은 내용을 놓습니다. 버튼을 눌러도 아무 일도 없습니다.</span><u>웹페이지 열기</u></a>
+        <a href="#" data-demo="1"><b>② HTML + CSS</b><span>꾸미기. 색, 글씨, 간격, 모양을 입힙니다. 버튼은 아직 움직이지 않습니다.</span><u>웹페이지 열기</u></a>
+        <a href="#" data-demo="2"><b>③ HTML + CSS + 자바스크립트</b><span>움직임. 버튼을 누르면 숫자가 올라갑니다.</span><u>웹페이지 열기</u></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1. 게임 -->
+  <section class="view" id="game">
+    <div class="wrap">
+      <div class="head">
+        <svg class="ico big" viewBox="0 0 48 48" aria-hidden="true"><path d="M13 15h22c6 0 9 5 9 11s-2 9-6 9c-3 0-4-3-7-3H17c-3 0-4 3-7 3-4 0-6-3-6-9s3-11 9-11z"/><path d="M15 21v8M11 25h8M31 22h.5M36 27h.5"/></svg>
+        <div>
+          <h2><span class="hl">2. 간단한 게임 만들기</span></h2>
+          <p>Gemini에서 캔버스(Canvas)를 켜고 아래 프롬프트 중 하나를 붙여넣으세요. 완성된 게임이 미리보기에 바로 나타납니다.</p>
+          <div class="cta"><a class="btn" href="https://gemini.google.com/" target="_blank" rel="noopener">Gemini 열기</a></div>
+        </div>
+      </div>
+      <ol class="steps">
+        <li><h3>캔버스 켜기</h3><p>입력창의 도구 메뉴에서 Canvas를 선택합니다.</p></li>
+        <li><h3>프롬프트 붙여넣기</h3><p>아래 카드에서 복사를 누르고 입력창에 붙여넣어 보냅니다.</p></li>
+        <li><h3>미리보기에서 해 보기</h3><p>코드가 다 쓰이면 미리보기에서 게임을 직접 해 봅니다.</p></li>
+        <li><h3>말로 고치기</h3><p>"배경을 하늘색으로 바꿔줘", "시간을 60초로 늘려줘"처럼 이어서 요청합니다.</p></li>
+      </ol>
+      <div class="cards">
+        <article class="card">
+          <div class="card-top"><div><h3>두더지 잡기</h3><span class="sub">예시 프롬프트 1</span></div><button class="btn small line" type="button" data-copy="p1">복사</button></div>
+<pre class="prompt" id="p1">두더지 잡기 게임 웹앱을 만들어줘.
+
+- HTML 파일 하나로 만들어줘. (CSS와 자바스크립트도 그 안에 포함)
+- 3×3으로 구멍 9개를 배치해줘.
+- 두더지(🐹)가 무작위 구멍에서 1초 정도 나왔다가 들어가.
+- 두더지를 클릭하거나 터치하면 1점을 얻어.
+- 제한 시간은 30초이고, 화면 위에 점수와 남은 시간을 보여줘.
+- '시작' 버튼을 누르면 게임이 시작돼.
+- 시간이 끝나면 최종 점수와 '다시 하기' 버튼을 보여줘.
+- 밝고 귀여운 디자인으로, 휴대폰에서도 잘 보이게 해줘.</pre>
+        </article>
+        <article class="card">
+          <div class="card-top"><div><h3>카드 짝 맞추기</h3><span class="sub">예시 프롬프트 2</span></div><button class="btn small line" type="button" data-copy="p2">복사</button></div>
+<pre class="prompt" id="p2">카드 짝 맞추기 게임 웹앱을 만들어줘.
+
+- HTML 파일 하나로 만들어줘. (CSS와 자바스크립트도 그 안에 포함)
+- 4×4로 카드 16장을 뒤집어 놓고, 과일 이모지 8쌍을 무작위로 섞어줘.
+- 카드를 누르면 뒤집히고, 두 장이 같으면 그대로 열려 있어.
+- 두 장이 다르면 1초 뒤에 다시 뒤집혀.
+- 화면 위에 시도 횟수와 걸린 시간을 보여줘.
+- 모든 짝을 맞추면 축하 메시지와 '다시 하기' 버튼을 보여줘.
+- 깔끔한 디자인으로, 휴대폰에서도 잘 보이게 해줘.</pre>
+        </article>
+        <article class="card">
+          <div class="card-top"><div><h3>1부터 25까지</h3><span class="sub">예시 프롬프트 3</span></div><button class="btn small line" type="button" data-copy="p3">복사</button></div>
+<pre class="prompt" id="p3">숫자 빨리 누르기 게임 웹앱을 만들어줘.
+
+- HTML 파일 하나로 만들어줘. (CSS와 자바스크립트도 그 안에 포함)
+- 5×5 칸에 1부터 25까지 숫자를 무작위로 배치해줘.
+- 1부터 순서대로 눌러야 하고, 맞게 누른 칸은 색이 바뀌어.
+- 틀린 숫자를 누르면 그 칸이 잠깐 빨갛게 변해.
+- 첫 숫자를 누르면 타이머가 시작되고, 화면 위에 걸린 시간과 다음에 누를 숫자를 보여줘.
+- 25까지 다 누르면 기록을 보여주고 '다시 하기' 버튼을 보여줘.
+- 깔끔한 디자인으로, 휴대폰에서도 잘 보이게 해줘.</pre>
+        </article>
+      </div>
+      <div class="tip"><svg class="ico" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 7c-6 0-10 4-10 10 0 4 2 6 4 8v4h12v-4c2-2 4-4 4-8 0-6-4-10-10-10z"/><path d="M15 33h10M20 1v3M5 8l2 2M35 8l-2 2M2 19h3M35 19h3"/></svg><p><b>한 번에 안 돼도 괜찮아요.</b> 교육용 Gemini는 한 번에 완벽하게 만들지 못할 수 있습니다. 안 되는 부분을 그대로 적어서 다시 요청하세요. 예: "시작 버튼을 눌러도 두더지가 안 나와. 고쳐줘."</p></div>
+    </div>
+  </section>
+
+  <!-- 2. 퀴즈 앱 -->
+  <section class="view" id="quiz">
+    <div class="wrap">
+      <div class="head">
+        <svg class="ico big" viewBox="0 0 48 48" aria-hidden="true"><path d="M12 5h18l8 8v30H12z"/><path d="M30 5v8h8M18 21h14M18 28h14M18 35l3 3 6-7"/></svg>
+        <div>
+          <h2><span class="hl">3. 학습 퀴즈 앱 만들기</span></h2>
+          <p>영어 교과서 PDF를 Gemini에 첨부해서 먼저 핵심 단어를 뽑고, 그 단어로 학생들이 풀 퀴즈 앱을 만듭니다. 퀴즈 앱 프롬프트는 직접 써 보세요.</p>
+        </div>
+      </div>
+
+      <div class="card pdf">
+        <div><h3>실습용 영어 PDF</h3><span class="sub">6학년 영어 Lesson 5. Where Is ABC Library? 아래 버튼으로 파일을 내려받아 Gemini 입력창에 첨부하세요.</span></div>
+        <a class="btn" href="https://drive.google.com/drive/folders/1Vao2pIuR0bQSBREBSqNaX9HJcgLigAmQ?usp=sharing" target="_blank" rel="noopener">PDF 열기</a>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><div><h3>먼저, 핵심 단어 뽑기</h3><span class="sub">PDF를 첨부한 뒤 이 프롬프트를 붙여넣으세요.</span></div><button class="btn small line" type="button" data-copy="p0">복사</button></div>
+<pre class="prompt" id="p0">첨부한 영어 교과서 PDF에서 학생들이 외워야 할 '단원 핵심 단어(장소)'와 '핵심 어구(길 안내/위치)'만 추출해 줘. 교과서 목차(Fun Talk, Study Point 등)나 깨진 글자는 전부 빼고, 인사말 없이 아래 형식으로 코드 블록(```) 안에 넣어서 출력해. 형식: 영어 단어 - 한국어 뜻 (예: library - 도서관)</pre>
+      </div>
+
+      <h3 class="sub-h">이제, 뽑은 단어로 퀴즈 앱 만들기</h3>
+      <div class="two">
+        <div class="card">
+          <h3>프롬프트에 담을 것</h3>
+          <ul class="checks">
+            <li><b>누가 쓰나요?</b> 학년과 수준을 적습니다.</li>
+            <li><b>무엇으로 만드나요?</b> 첨부한 PDF 내용만 쓰라고 적습니다.</li>
+            <li><b>어떤 문제인가요?</b> 문제 유형과 개수를 정합니다.</li>
+            <li><b>답을 고르면?</b> 정답 표시와 해설을 어떻게 보여줄지 적습니다.</li>
+            <li><b>끝나면?</b> 점수와 다시 풀기 방법을 적습니다.</li>
+            <li><b>화면은?</b> 한 문제씩 보여줄지, 어떤 분위기인지 적습니다.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-top"><div><h3>내 프롬프트</h3><span class="sub">여기에 쓰고 복사해서 Gemini에 붙여넣으세요.</span></div><button class="btn small line" type="button" data-copy="draft">복사</button></div>
+          <textarea class="draft" id="draft" aria-label="내 프롬프트" placeholder="첨부한 영어 PDF로 학습 퀴즈 웹앱을 만들어줘.&#10;&#10;- 대상:&#10;- 문제 유형과 개수:&#10;- 답을 고르면:&#10;- 끝나면:"></textarea>
+        </div>
+      </div>
+
+      <div class="card locked" id="lock-box">
+        <div><h3>예시 프롬프트</h3><span class="sub" id="lock-msg">강사가 공개 비밀번호를 알려 주면 볼 수 있습니다. 그때까지는 직접 써 보세요.</span></div>
+        <form class="row" id="lock-form" autocomplete="off">
+          <input class="field" id="lock-pw" type="password" inputmode="numeric" aria-label="예시 공개 비밀번호" placeholder="공개 비밀번호">
+          <button class="btn" type="submit">예시 보기</button>
+        </form>
+        <div class="error" id="lock-error" role="alert"></div>
+        <div id="answer" hidden>
+          <div class="row" style="justify-content: space-between; margin-bottom: 14px;">
+            <button class="btn small" type="button" data-copy="p4">복사</button>
+            <button class="btn small line" type="button" id="relock">다시 잠그기</button>
+          </div>
+          <pre class="prompt" id="p4" style="background: var(--paper); border: 2px solid var(--ink);"></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. API 키 -->
+  <section class="view" id="api-key">
+    <div class="wrap">
+      <div class="head">
+        <svg class="ico big" viewBox="0 0 48 48" aria-hidden="true"><circle cx="15" cy="24" r="9"/><path d="M24 24h20M36 24v7M42 24v5M13 24h.5"/></svg>
+        <div>
+          <h2><span class="hl">4. API 키 발급</span></h2>
+          <p>API 키는 내가 만든 앱이 Gemini를 불러 쓸 때 필요한 열쇠입니다. Google AI Studio에서 무료로 만들 수 있습니다.</p>
+          <div class="cta"><a class="btn" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio 열기</a></div>
+        </div>
+      </div>
+      <ol class="steps">
+        <li><h3>구글 계정으로 로그인</h3><p>위 버튼으로 AI Studio에 들어가 로그인합니다. 처음이면 약관에 동의합니다.</p></li>
+        <li><h3>API 키 메뉴 열기</h3><p>화면에서 Get API key(API 키)를 누릅니다.</p></li>
+        <li><h3>키 만들기</h3><p>Create API key(API 키 만들기)를 누르고, 프로젝트를 고르거나 새로 만듭니다.</p></li>
+        <li><h3>복사해서 보관</h3><p>만들어진 키를 복사해 메모장에 붙여 둡니다. 앱에 AI 기능을 넣을 때 씁니다.</p></li>
+      </ol>
+      <div class="tip"><svg class="ico" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 7c-6 0-10 4-10 10 0 4 2 6 4 8v4h12v-4c2-2 4-4 4-8 0-6-4-10-10-10z"/><path d="M15 33h10M20 1v3M5 8l2 2M35 8l-2 2M2 19h3M35 19h3"/></svg><p><b>키는 비밀번호와 같아요.</b> 단체 대화방이나 수업 자료에 올리지 마세요. 학교 계정에서 AI Studio가 막혀 있으면 개인 구글 계정으로 로그인하세요.</p></div>
+    </div>
+  </section>
+
+  <footer>바이브코딩 교원 연수 자료</footer>
+  </main>
+
+  <button class="btn to-top" type="button" id="to-top" aria-label="맨 위로" title="맨 위로" hidden>↑</button>
+
+  <div class="demo" id="demo" hidden role="dialog" aria-modal="true" aria-label="HTML, CSS, 자바스크립트 비교">
+    <div class="demo-win">
+      <div class="demo-bar">
+        <button class="btn small line" type="button" data-demo="0">① HTML만</button>
+        <button class="btn small line" type="button" data-demo="1">② HTML + CSS</button>
+        <button class="btn small line" type="button" data-demo="2">③ HTML + CSS + 자바스크립트</button>
+        <button class="btn small close" type="button" id="demo-close">닫기</button>
+      </div>
+      <p class="demo-note" id="demo-note"></p>
+      <div class="demo-body">
+        <div class="demo-pane"><h3>결과 화면</h3><div id="demo-view"></div></div>
+        <div class="demo-pane"><h3>코드</h3><pre class="prompt" id="demo-code"></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var ENTER_PW = "1113";
+  var REVEAL_PW = "0000";
+  var QUIZ_PROMPT = [
+    "첨부한 영어 PDF 내용으로 학습 퀴즈 웹앱을 만들어줘.",
+    "",
+    "- 대상: 이 지문을 배운 우리 반 학생",
+    "- HTML 파일 하나로 만들어줘. (CSS와 자바스크립트도 그 안에 포함)",
+    "- PDF 본문에서 중요한 단어와 문장을 골라 문제 10개를 만들고, 문제를 앱 안에 미리 넣어줘.",
+    "- 문제 유형: 단어 뜻 고르기(4지선다) 5문제, 문장 빈칸 채우기(4지선다) 3문제, 내용 이해 O/X 2문제",
+    "- PDF에 없는 내용은 문제로 내지 마.",
+    "- 한 화면에 한 문제씩 보여주고, 위쪽에 '3 / 10'처럼 진행 상황을 보여줘.",
+    "- 답을 고르면 바로 정답인지 알려주고, 한국어 해설을 한 줄 보여줘.",
+    "- 문제와 보기는 영어로, 해설은 한국어로 써줘.",
+    "- 마지막 화면에 점수를 보여주고, '틀린 문제 다시 풀기'와 '처음부터 다시' 버튼을 넣어줘.",
+    "- 깔끔하고 읽기 편한 디자인으로, 휴대폰에서도 잘 보이게 해줘."
+  ].join("\n");
+
+  function $(id) { return document.getElementById(id); }
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function drop(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+  // 로그인
+  function enter() { $("gate").hidden = true; $("app").hidden = false; setTimeout(function () { if (sections.indexOf(start) >= 0) go(start, false); mark(); }, 0); }
+  if (load("vc-enter") === "1") enter();
+  $("gate-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if ($("gate-pw").value.trim() === ENTER_PW) { store("vc-enter", "1"); enter(); }
+    else { $("gate-error").textContent = "비밀번호가 맞지 않습니다. 강사에게 확인하세요."; $("gate-pw").select(); }
+  });
+
+  // 예시 프롬프트 공개
+  function reveal() {
+    $("p4").textContent = QUIZ_PROMPT;
+    $("answer").hidden = false; $("lock-form").hidden = true;
+    $("lock-error").textContent = "";
+    $("lock-msg").textContent = "내가 쓴 프롬프트와 비교해 보세요.";
+  }
+  if (load("vc-reveal") === "1") reveal();
+  $("lock-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if ($("lock-pw").value.trim() === REVEAL_PW) { store("vc-reveal", "1"); reveal(); }
+    else { $("lock-error").textContent = "아직 공개 전입니다. 비밀번호를 확인하세요."; $("lock-pw").select(); }
+  });
+  $("relock").addEventListener("click", function () {
+    drop("vc-reveal");
+    $("p4").textContent = ""; $("lock-pw").value = "";
+    $("answer").hidden = true; $("lock-form").hidden = false;
+    $("lock-msg").textContent = "강사가 공개 비밀번호를 알려 주면 볼 수 있습니다. 그때까지는 직접 써 보세요.";
+  });
+
+  // 내 프롬프트 임시 저장
+  var draft = $("draft");
+  var saved = load("vc-draft"); if (saved) draft.value = saved;
+  draft.addEventListener("input", function () { store("vc-draft", draft.value); });
+
+  // 복사
+  function flash(btn, text) {
+    var old = btn.dataset.label || btn.textContent;
+    btn.dataset.label = old; btn.textContent = text; btn.classList.add("done");
+    setTimeout(function () { btn.textContent = old; btn.classList.remove("done"); }, 1600);
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", "");
+    ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok;
+  }
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-copy]");
+    if (!btn) return;
+    var el = $(btn.dataset.copy);
+    var text = "value" in el ? el.value : el.textContent;
+    if (!text.trim()) { flash(btn, "내용 없음"); return; }
+    var fail = function () { flash(btn, fallbackCopy(text) ? "복사됨" : "직접 선택해 복사"); };
+    try {
+      navigator.clipboard.writeText(text).then(function () { flash(btn, "복사됨"); }, fail);
+    } catch (err) { fail(); }
+  });
+
+  // HTML / CSS / 자바스크립트 비교 예시
+  var D_HTML = [
+    '<h1>3학년 2반을 소개합니다</h1>',
+    '<p>우리 반은 웃음이 많은 반입니다.</p>',
+    '',
+    '<h2>우리 반 자랑</h2>',
+    '<ul>',
+    '  <li>인사를 잘해요</li>',
+    '  <li>급식을 남기지 않아요</li>',
+    '  <li>체육대회 1등</li>',
+    '</ul>',
+    '',
+    '<button>응원하기</button>',
+    '<p id="count">응원 0번</p>'
+  ].join("\n");
+  var D_CSS = [
+    'body { font-family: sans-serif; background: #fff8e1; color: #333; text-align: center; padding: 30px; }',
+    'h1 { color: #e65100; }',
+    'ul { list-style: none; padding: 0; }',
+    'li { background: white; border-radius: 10px; padding: 10px; margin: 8px auto; width: 220px; }',
+    'button { background: #e65100; color: white; border: none; border-radius: 20px; padding: 10px 24px; font-size: 16px; }'
+  ].join("\n");
+  var D_JS = [
+    'var count = 0;',
+    'var button = document.querySelector("button");',
+    'var text = document.querySelector("#count");',
+    '',
+    'button.onclick = function () {',
+    '  count = count + 1;',
+    '  text.textContent = "응원 " + count + "번";',
+    '};'
+  ].join("\n");
+  var D_NOTES = [
+    "HTML만 썼습니다. 내용은 다 있지만 꾸밈이 없고, 버튼을 눌러도 아무 일도 일어나지 않습니다.",
+    "CSS를 더했습니다. 내용은 그대로인데 색과 모양이 달라졌습니다. 버튼은 아직 움직이지 않습니다.",
+    "자바스크립트를 더했습니다. 응원하기 버튼을 눌러 보세요. 숫자가 올라갑니다."
+  ];
+  function indent(t) { return t.split("\n").map(function (l) { return l ? "  " + l : l; }).join("\n"); }
+  var demoRoot = null;
+  function openDemo(n) {
+    var code = D_HTML;
+    if (n >= 1) code = "<style>\n" + indent(D_CSS) + "\n</style>\n\n" + code;
+    if (n >= 2) code = code + "\n\n<script>\n" + indent(D_JS) + "\n</" + "script>";
+    $("demo-code").textContent = code;
+    $("demo-note").textContent = D_NOTES[n];
+    var view = $("demo-view");
+    if (!demoRoot) demoRoot = view.attachShadow ? view.attachShadow({ mode: "open" }) : view;
+    var css = ":host { all: initial; display: block; } .page { display: block; padding: 8px; min-height: 304px; box-sizing: border-box; }";
+    if (n >= 1) css += "\n" + D_CSS.replace("body {", ".page {");
+    demoRoot.innerHTML = "<style>" + css + "</style><div class=\"page\">" + D_HTML + "</div>";
+    if (n >= 2) {
+      var count = 0, button = demoRoot.querySelector("button"), text = demoRoot.querySelector("#count");
+      button.onclick = function () { count = count + 1; text.textContent = "응원 " + count + "번"; };
+    }
+    Array.prototype.forEach.call(document.querySelectorAll(".demo-bar [data-demo]"), function (b) {
+      b.classList.toggle("done", Number(b.dataset.demo) === n);
+    });
+    $("demo").hidden = false;
+  }
+  function closeDemo() { $("demo").hidden = true; }
+  $("demo-close").addEventListener("click", closeDemo);
+  $("demo").addEventListener("click", function (e) { if (e.target === $("demo")) closeDemo(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeDemo(); });
+  document.addEventListener("click", function (e) {
+    var d = e.target.closest("[data-demo]");
+    if (!d) return;
+    e.preventDefault();
+    openDemo(Number(d.dataset.demo));
+  });
+
+  // 상단 메뉴: 해당 내용으로 이동
+  var scroller = $("scroller");
+  var sections = ["map", "game", "quiz", "api-key"];
+  var smooth = !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  function go(name, animate) {
+    var el = $(name);
+    if (!el) return;
+    var top = name === "home" ? 0 : el.offsetTop - scroller.offsetTop;
+    try { scroller.scrollTo({ top: top, behavior: animate && smooth ? "smooth" : "auto" }); }
+    catch (e) { scroller.scrollTop = top; }
+  }
+  function mark() {
+    var y = scroller.scrollTop + scroller.clientHeight * 0.35, current = "";
+    sections.forEach(function (id) { if ($(id).offsetTop - scroller.offsetTop <= y) current = id; });
+    $("to-top").hidden = scroller.scrollTop < 300;
+    Array.prototype.forEach.call(document.querySelectorAll(".nav div a"), function (a) {
+      if (a.getAttribute("href") === "#" + current) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
+    });
+  }
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest('a[href^="#"]');
+    if (!a || a.hasAttribute("data-demo")) return;
+    e.preventDefault();
+    go(a.getAttribute("href").slice(1), true);
+  });
+  scroller.addEventListener("scroll", mark, { passive: true });
+  $("to-top").addEventListener("click", function () { go("home", true); });
+  var start = (location.hash || "").replace("#", "");
+})();
+</script>
+</body>
+</html>
