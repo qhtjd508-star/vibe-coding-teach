@@ -42,7 +42,7 @@ README.md
 
 | 변수 | 값 | 용도 | 기록 저장 위치 |
 |---|---|---|---|
-| `ENTER_PW` | `1234` | 사이트 입장 | `sessionStorage`의 `vc-enter` (탭 단위) |
+| `ENTER_PW` | `1227` | 사이트 입장 | `sessionStorage`의 `vc-enter` (탭 단위) |
 | `REVEAL_PW` | `0000` | 퀴즈 예시 프롬프트 공개 | `localStorage`의 `vc-reveal` (계속 유지) |
 
 - 입장 기록은 탭 단위라서 **새 탭/새 창을 열 때마다 비밀번호를 다시 묻는다**. 같은 탭에서 새로고침할 때는 묻지 않는다.
