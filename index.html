@@ -748,10 +748,14 @@ footer { background: var(--parchment); padding: 32px 20px; text-align: center; f
 
   // 로그인
   function enter() { $("gate").hidden = true; $("app").hidden = false; setTimeout(function () { if (sections.indexOf(start) >= 0) go(start, false); mark(); }, 0); }
-  if (load("vc-enter") === "1") enter();
+  // 입장 기록은 탭 단위(sessionStorage): 새 탭을 열 때마다 비밀번호를 다시 묻는다
+  drop("vc-enter"); // 예전 버전이 localStorage에 남긴 기록 정리
+  function sessionOk() { try { return sessionStorage.getItem("vc-enter") === "1"; } catch (e) { return false; } }
+  function sessionSave() { try { sessionStorage.setItem("vc-enter", "1"); } catch (e) {} }
+  if (sessionOk()) enter();
   $("gate-form").addEventListener("submit", function (e) {
     e.preventDefault();
-    if ($("gate-pw").value.trim() === ENTER_PW) { store("vc-enter", "1"); enter(); }
+    if ($("gate-pw").value.trim() === ENTER_PW) { sessionSave(); enter(); }
     else { $("gate-error").textContent = "비밀번호가 맞지 않습니다. 강사에게 확인하세요."; $("gate-pw").select(); }
   });
 
